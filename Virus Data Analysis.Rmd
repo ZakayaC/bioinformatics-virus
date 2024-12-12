@@ -1,0 +1,197 @@
+---
+title: "Virus Proteomz"
+
+---
+
+# Introduction
+
+This notebook provides a comprehensive analysis of virus data,
+showcasing basic to advanced R functionalities. The analysis will cover
+data import, cleaning, exploratory data analysis (EDA), and advanced
+statistical methods. The goal is to understand the data better and
+uncover significant patterns and relationships that can inform further
+research and decision-making.
+
+# Importing data
+
+```{r}
+library(readr) 
+VirusData <- read_csv("pt 2/VirusProteomz.csv")
+```
+
+# Cleaning the Data
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(readr) 
+VirusData <- read_csv("pt 2/VirusProteomz.csv")
+
+# 1. Remove rows with missing values
+cleaned_data <- VirusData %>%
+  na.omit()
+
+# 2. Filter out outliers (example: removing rows where 'value' column is outside 1.5*IQR)
+Q1 <- quantile(cleaned_data$value, 0.25)
+Q3 <- quantile(cleaned_data$value, 0.75)
+IQR <- Q3 - Q1
+
+# 3. Normalize the data (example: scaling 'value' column between 0 and 1)
+cleaned_data <- cleaned_data %>%
+  mutate(value = (60 - min(0)) / (max(60) - min(0)))
+
+# View the cleaned data
+head(cleaned_data)
+```
+
+# Basic Exploration: Examine data dimensions and structure.
+
+## Check the structure of the data
+
+```{r}
+str(VirusData)
+```
+
+## Get a summary of each column
+
+```{r}
+summary(VirusData)
+```
+
+## Creating vectors
+
+```{r}
+virus_vector <- c(1, 2, 3, 4, 5)
+```
+
+## Data frame and Vectors
+
+```{r}
+VirusData <- c("Myoviridae", "Phycodnaviridae", "Podoviridae") 
+new_vector <- VirusData[-c(2, 5)]
+```
+
+```{r}
+VirusData <- data.frame(VirusName = c("Myoviridae", "Phycodnaviridae",
+"Podoviridae", "Mimiviradae","Siphoviridae"), Depth.m. = c(20, 80, 150, 300, 500)
+)
+exists("Depth_.m.")
+Depth_.m. <- c(20, 80 , 150, 300, 500) 
+
+VirusData <- Depth_.m.[-c(1,2)]
+print(VirusData)
+```
+
+# Exploratory Data Analysis (EDA)
+
+# Relationship between Scaling_Factor and Exclusive.Sum.PSM
+
+```{r}
+library(ggplot2)
+library(dplyr)
+VirusData <- read_csv("pt 2/VirusProteomz.csv")
+head(VirusData)
+
+ggplot(VirusData, aes(x = Scaling_Factor, y = Exclusive.Sum.PSM)) +
+  geom_point(color = "purple") +
+  labs(title = "Scaling Factor vs Exclusive Sum PSM", x = "Scaling Factor", y = "Exclusive Sum PSM") +
+  theme_minimal()
+
+
+```
+
+# Histogram: To visualize distribution of a variable.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+VirusData <- read_csv("pt 2/VirusProteomz.csv")
+head(VirusData)
+
+ggplot(VirusData, aes(x = Scaled.Corrected.Exclusive.Sum)) +
+  geom_histogram(binwidth = 0.5, fill = "lightblue", color = "black") +
+  labs(title = "Distribution of ScaleCorrectedExclusiveSum", x = "Exclusive Sum", y = "Frequency") +
+  theme_minimal()
+```
+
+# Boxplot: Show spread and outliers for a variable.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+VirusData <- read_csv("pt 2/VirusProteomz.csv")
+head(VirusData)
+
+ggplot(VirusData, aes(y = Exclusive.Sum.PSM)) +
+  geom_boxplot(fill = "pink") +
+  labs(title = "Boxplot of Virus Abundance", y = "Exclusive.Sum.PSM") +
+  theme_minimal()
+```
+# Boxplot: Show Family level abundance by Stn group.
+
+```{r}
+library(ggplot2)
+library(readr)
+
+# Remove rows with missing values in key columns
+cleaned_data <- VirusData[!is.na(VirusData$Family) & !is.na(VirusData$Stn), ]
+
+
+# Aggregate data by DepthGroup and Family
+taxa_abundance <- aggregate(cleaned_data$Scaled.Corrected.Exclusive.Sum, 
+                             by = list(Stn = cleaned_data$Stn, Phylum = cleaned_data$Phylum), 
+                             FUN = sum)
+
+# Rename columns
+colnames(taxa_abundance) <- c("Stn", "Family", "Abundance")
+
+# Plot
+ggplot(taxa_abundance, aes(x = Stn, y = Abundance, fill = Family)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Family-Level Abundance by Stn Group", x = "Stn", y = "Abundance") +
+  theme_minimal()
+```
+# Boxplot: Show Order level abundance by depth group.
+
+```{r}
+library(ggplot2)
+library(readr)
+
+# Aggregate data by DepthGroup and Order
+taxa_abundance_order <- aggregate(cleaned_data$Scaled.Corrected.Exclusive.Sum, 
+                                   by = list(DepthGroup = cleaned_data$DepthGroup, Order = cleaned_data$Order), 
+                                   FUN = sum)
+
+# Rename columns
+colnames(taxa_abundance_order) <- c("DepthGroup", "Order", "Abundance")
+
+# Plot
+ggplot(taxa_abundance_order, aes(x = DepthGroup, y = Abundance, fill = Order)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Class-Level Abundance by Depth Group", x = "Depth Group", y = "Abundance") +
+  theme_minimal()
+
+```
+
+# Boxplot: Show Order taxa abundance by Class group.
+```{r}
+library (readr)
+library (ggplot2)
+VirusData <- read_csv("pt 2/VirusProteomz.csv")
+head(VirusData)
+ggplot(cleaned_data, aes(x = Latitude, y = Scaled.Corrected.Exclusive.Sum, color = Class)) +
+  geom_point() +
+  labs(title = "Taxa Abundance (Class Level) vs. Latitude", x = "Latitude", y = "Abundance") +
+  theme_minimal()
+
+```
+
+# Conclusion
+
+In this notebook, we have demonstrated various R functionalities from
+basic operations to advanced analyses on virus data. We started with
+basic data structures and operations, moved on to data cleaning and
+exploratory data analysis, and finally performed advanced analyses such
+as regression and clustering. Future work could include more
+sophisticated modeling and validation techniques to further understand
+the virus data.
